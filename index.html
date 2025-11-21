@@ -1,0 +1,56 @@
+index.html
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Connect your bank</title>
+    <script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
+  </head>
+  <body>
+    <h1>Connect your bank</h1>
+    <button id="link-button">Connect via Plaid</button>
+
+    <script>
+      const N8N_BASE = "https://apodtynov.app.n8n.cloud"; // no trailing slash
+
+      async function getLinkToken() {
+        const res = await fetch(`${N8N_BASE}/api/link-token`);
+        const data = await res.json();
+        return data.link_token;
+      }
+
+      async function openPlaidLink() {
+        const linkToken = await getLinkToken();
+
+        const handler = window.Plaid.create({
+          token: linkToken,
+          onSuccess: async function (public_token, metadata) {
+            console.log("Plaid success, public_token:", public_token);
+
+            // send public_token to n8n so it can exchange for access_token
+            await fetch(`${N8N_BASE}/api/plaid/public-token`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                user_id: "test-user-1", // later: real user id
+                public_token: public_token,
+                institution: metadata.institution?.name || null
+              })
+            });
+
+            alert("Bank connected successfully!");
+          },
+          onExit: function (err, metadata) {
+            if (err) console.error("Plaid Link exited with error", err);
+          }
+        });
+
+        handler.open();
+      }
+
+      document
+        .getElementById("link-button")
+        .addEventListener("click", openPlaidLink);
+    </script>
+  </body>
+</html>
