@@ -10,19 +10,6 @@ index.html
     <h1>Connect your bank</h1>
     <button id="link-button">Connect via Plaid</button>
 
- <!-- ✅ Add the testing JavaScript RIGHT HERE -->
-    <script>
-      async function test() {
-        const r = await fetch("https://apodtynov.app.n8n.cloud/webhook/api/link-token");
-        const d = await r.json();
-        console.log(d);
-        alert(d.link_token);
-      }
-
-      document.getElementById("link-button").addEventListener("click", test);
-    </script>
-    <!-- end testing JS -->
-
     <script>
       const N8N_BASE = "https://apodtynov.app.n8n.cloud"; // no trailing slash
 
@@ -41,7 +28,7 @@ index.html
             console.log("Plaid success, public_token:", public_token);
 
             // send public_token to n8n so it can exchange for access_token
-            await fetch(`${N8N_BASE}/api/plaid/public-token`, {
+            await fetch(`${N8N_BASE}/webhook/api/plaid/public-token`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
